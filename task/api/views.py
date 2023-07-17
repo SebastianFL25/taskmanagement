@@ -11,9 +11,9 @@ class TaskModelViewSet(ModelViewSet):
     serializer_class = TaskSerializerModel
     queryset = Task.objects.all()
     
-    def get_queryset(self,pk=None):
+    """def get_queryset(self,pk=None):
         if pk is None:
-            return self.get_serializer().Meta.model.objects.filter()
+            return self.get_serializer().Meta.model.objects.all()
         return self.get_serializer().Meta.model.objects.filter(id=pk)
     
     def list(self,request):
@@ -46,7 +46,7 @@ class TaskModelViewSet(ModelViewSet):
             task.state = False
             task.save()
             return Response({'message':'task deleted'},status= status.HTTP_200_OK)
-        return Response({'error':'Not exist'},status= status.HTTP_404_NOT_FOUND)
+        return Response({'error':'Not exist'},status= status.HTTP_404_NOT_FOUND)"""
     
     
 class StatusLisCreateApiView(generics.ListCreateAPIView):

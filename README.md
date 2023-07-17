@@ -8,6 +8,11 @@ Used technology
 
 The API is implemented using the Django rest framework for creating microservices. A sqlite3 database is used to store task and user information. The API also has a Swagger documentation for ease of use.
 
+Requeriments
+
+Before using the project, create an .env file inside the settings folder.
+Download the requirements with the command (pip install requirements).
+
 How to use the API
 
 The API can be used through HTTP and JSON calls. The available operations are:
@@ -18,6 +23,7 @@ e-mail) and password.
 
 ● POST /api/login/: Log in to the API. It is required to send the following
 data in the body of the request: email (email address) and password (password). You will receive a valid access token in the response.
+
 
 For more detailed information about endpoints and the data required, see the Swagger documentation.
 
