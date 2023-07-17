@@ -1,66 +1,73 @@
 
+from datetime import datetime
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+
 from django.contrib.sessions.models import Session
-from rest_framework_simplejwt.views import TokenObtainPairView ,TokenRefreshView
-from rest_framework_simplejwt.tokens import RefreshToken
 
-from .api.serializer import CustomTokenObtainPairSerializer,UserSerializers
-from django.contrib.auth import authenticate
-from rest_framework.generics import GenericAPIView
+from .api.serializer import  UserSerializers
+from rest_framework.views import APIView
 from .models import User
+from .utils import ObtainAuthTokenp
 
 
-class Login(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+class Login(ObtainAuthTokenp):
     
-    """def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(email=email, password=password)
-        if user:
-            return self.post(request, *args, **kwargs)
-        else:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)"""
-    
+    def post(self, request):
+        
+        
+        loginserializer = self.serializer_class(data=request.data,context={"request":request})
+        if loginserializer.is_valid():
+            user =loginserializer.validated_data['user']
+            if user.is_active:
+                token,created = Token.objects.get_or_create(user = user)
+                user_tokenserializers= UserSerializers(user)
+                if created:
+                    return Response({
+                        "Token": token.key,
+                        "user":user_tokenserializers.data,
+                        "message":"Login successful"
+                    },status= status.HTTP_201_CREATED)
+                else:
+                    """all_session =Session.objects.filter(expire_date__gte =datetime.now())
+                    if all_session.exists():
+                        for session in all_session:
+                            session_data = session.get_decoded()
+                            if user.id == int(session_data.get('_auth_user_id')):
+                                session.delete()"""
+                    token.delete()
+                    #token =Token.objects.create(user=user)
+                    return Response({
+                        "message":"The user is already logged in"
+                    },status= status.HTTP_409_CONFLICT)
+            else:
+                return Response({'error':'can not enter'},status=status.HTTP_401_UNAUTHORIZED)
+        else: 
+            return Response({'error':'Incorrect username or password'},status=status.HTTP_401_UNAUTHORIZED)
+        
+        
+class Logout(APIView):
     def post(self, request, *args, **kwargs):
-        
-        email = request.data.get('email')
-        password = request.data.get('password')
-        
-        user = authenticate(
-            email=email,
-            password=password
-        )
-        
-        if user:
-            login_serializer = self.serializer_class(data=request.data)
+        try:
+            token = request.POST.get('token')
+            token = Token.objects.filter(key=token).first()
+            print(token.user)
+            if token:
+                user = token.user
+                all_session =Session.objects.filter(expire_date__gte =datetime.now())
+                if all_session.exists():
+                    for session in all_session:
+                        session_data = session.get_decoded()
+                        if user.id == int(session_data.get('_auth_user_id')):
+                            session.delete()
             
-            if login_serializer.is_valid():
+                token.delete()
                 
-                user_serializer= UserSerializers(user)
-                Response({
-                    'token':login_serializer.validated_data.get('access'),
-                    'refresh-token':login_serializer.validated_data.get('refresh'),
-                    'user':user_serializer.data,
-                    'message':'Inicio de sesion Exitoso'
-                },status=status.HTTP_200_OK)
-                
-            print(login_serializer.errors)
-            return Response({'error':'Email o contraseña incorrectoss'},status=status.HTTP_400_BAD_REQUEST)
-        return Response({'error':'Email o contraseña incorrectos'},status=status.HTTP_400_BAD_REQUEST)
-        
-class TokenRefreshView(TokenRefreshView):
-    pass
-
-        
-class Logout(GenericAPIView):
-    
-    def post(self, request, *args, **kwargs):
-        user = User.objects.filter(id=request.data.get('user',''))
-        if user.exists():
-            RefreshToken.for_user(user.first())
-            return Response({'message':'Sesion Cerrada Correctamente'},status=status.HTTP_200_OK)
-        return Response({'message':'No existe este usuario'},status=status.HTTP_400_BAD_REQUEST)
-        
+                session_message = 'User session deleted'
+                token_message = 'Token deleted'
+                    
+                return Response({'session_message':session_message,'token_message':token_message}, status=status.HTTP_200_OK)
+            return Response({'error_message':'User does not exist'},status=status.HTTP_400_BAD_REQUEST)
+        except:    
+            return Response({'error_message':'No token found in the request'},status=status.HTTP_409_CONFLICT)

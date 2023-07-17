@@ -1,10 +1,5 @@
 from django.contrib import admin
 from .models import Task,Status
-
-
-
-
-
     
 class TaskAdmin(admin.ModelAdmin):
 
