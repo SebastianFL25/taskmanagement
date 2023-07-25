@@ -34,7 +34,7 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
-TOKEN_EXPIRED_AFTER_SECONDS = 18000
+TOKEN_EXPIRED_AFTER_SECONDS =900 #18000
 # Application definition
 
 BASE_APPS = [
@@ -158,14 +158,14 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-REST_FRAMEWORK = {
+"""REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],    
-   'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    ),
-}
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}"""
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),

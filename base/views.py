@@ -10,9 +10,28 @@ from .api.serializer import  UserSerializers
 from rest_framework.views import APIView
 from .models import User
 from .utils import ObtainAuthTokenp
+from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 
+class UserTokenRefresh(APIView):
+    def get(self,request,*args, **kwargs):
+        email= request.GET.get('email')
+        try:
+            user_token=Token.objects.get(
+                user= UserSerializers().Meta.model.objects.filter(email=email).first()
+            )
+            return Response({
+                'token':user_token.key
+            })
+        except:
+            return Response(
+                {'error':'Credential incorrect'},status=status.HTTP_400_BAD_REQUEST 
+            ) 
 
 class Login(ObtainAuthTokenp):
+    #authentication_classes = [TokenAuthentication]
+    #permission_classes = [IsAuthenticated]
     
     def post(self, request):
         
@@ -21,6 +40,7 @@ class Login(ObtainAuthTokenp):
         if loginserializer.is_valid():
             user =loginserializer.validated_data['user']
             if user.is_active:
+                
                 token,created = Token.objects.get_or_create(user = user)
                 user_tokenserializers= UserSerializers(user)
                 if created:
@@ -29,6 +49,7 @@ class Login(ObtainAuthTokenp):
                         "user":user_tokenserializers.data,
                         "message":"Login successful"
                     },status= status.HTTP_201_CREATED)
+                    
                 else:
                     """all_session =Session.objects.filter(expire_date__gte =datetime.now())
                     if all_session.exists():

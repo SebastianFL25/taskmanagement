@@ -3,5 +3,7 @@ from .views import StatusLisCreateApiView
     
     
 urlpatterns = [
-    path("status",StatusLisCreateApiView.as_view(),name="list-create"),
+    path("status",StatusLisCreateApiView.as_view(),name="list-create-status"),
+
+
 ]
