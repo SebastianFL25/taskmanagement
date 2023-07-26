@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from .serializers import TaskSerializerModel,StatusSerializerModel,TaskUpdateSerializerModel
+from .serializers import TaskSerializerModel,StatusSerializerModel,TaskUpdateSerializerModel,TaskAssingToNewUserSerializer,TaskStatusSerializer
 from task.models import Task,Status
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +8,7 @@ from rest_framework import generics
 from django.contrib.auth.decorators import login_required
 from base.authentication_mixin import Authentication
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.authtoken.views import Token
 
 
@@ -67,8 +68,35 @@ class TaskModelViewSet(Authentication,ModelViewSet):
                 return Response(serializer.data,status=status.HTTP_201_CREATED)
             return Response('errors',status=status.HTTP_400_BAD_REQUEST)"""
 
+
     
     
+
+class TaskAssingToNewUser(generics.RetrieveUpdateAPIView):
+    lookup_field = "id"
+    queryset = Task.objects.all()
+    serializer_class=TaskAssingToNewUserSerializer
+    
+
+    def get_serializer_class(self):
+        if self.request.method in ['GET']:
+            return TaskSerializerModel
+        else:
+            return TaskStatusSerializer
+    
+    
+class TaskStatus(generics.RetrieveUpdateAPIView):
+    lookup_field = "id"
+    queryset = Task.objects.all()
+    serializer_class=TaskAssingToNewUserSerializer
+    
+
+    def get_serializer_class(self):
+        if self.request.method in ['GET']:
+            return TaskSerializerModel
+        else:
+            return TaskAssingToNewUserSerializer
+
 class StatusLisCreateApiView(generics.ListCreateAPIView):
     #authentication_classes = [SessionAuthentication]
     #permission_classes = [IsAuthenticated]

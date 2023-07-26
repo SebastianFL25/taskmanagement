@@ -9,6 +9,7 @@ class TaskSerializerModel(serializers.ModelSerializer):
     
     def to_representation(self,instance):
         return {
+            'id':instance.id,
             'Title':instance.title,
             'Description':instance.Description,
             'Fecha':instance.due_date,
@@ -42,6 +43,34 @@ class TaskUpdateSerializerModel(serializers.ModelSerializer):
             'Due_Date':instance.due_date,
             'User':instance.user.email,
             'status':instance.status.name
+            } 
+            
+class TaskAssingToNewUserSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Task
+        fields=('user',)
+        
+        def to_representation(self,instance):
+            return {
+            'Title':instance.title,
+            'Description':instance.Description,
+            'User':instance.user
+            
+            } 
+            
+class TaskStatusSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Task
+        fields=('status',)
+        
+        def to_representation(self,instance):
+            return {
+            'Title':instance.title,
+            'Description':instance.Description,
+            'status':instance.status
+            
             } 
             
 
