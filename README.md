@@ -24,6 +24,27 @@ e-mail) and password.
 ● POST /api/login/: Log in to the API. It is required to send the following
 data in the body of the request: email (email address) and password (password). You will receive a valid access token in the response.
 
+● GET /api/tasks/: Gets the list of all the tasks of the authenticated user.
+
+● POST /api/tasks/: Create a new task. It is required to send the following
+data in the request body: title (task title), description (task description), and due date (due date in YYYY-MM-DD format).
+
+● GET /api/tasks/{task_id}/: Gets the details of a specific task identified by its task_id.
+
+● PUT /api/tasks/{task_id}/ – Updates a specific task identified by its task_id. The following data is required to be sent in the request body: title (optional), description (optional), expiration_date (optional) and status (optional).
+
+● DELETE /api/tasks/{task_id}/: Deletes a specific task identified by its task_id.
+additional functionalities
+
+● POST /api/tasks/{task_id}/assign/: Assigns a specific identified task
+by its task_id to another user. It is required to send the user_id of the user to whom
+the task will be assigned in the request body.
+
+● POST /api/tasks/{task_id}/complete/: Mark a specific task
+identified by its task_id as completed.
+
+● GET /api/tasks/stats/: Obtiene estadísticas sobre las tareas del usuario
+autenticado, incluyendo la cantidad total de tareas, la cantidad de tareas completadas y la cantidad de tareas pendientes.
 
 For more detailed information about endpoints and the data required, see the Swagger documentation.
 

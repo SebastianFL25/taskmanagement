@@ -1,7 +1,7 @@
 import os
 import environ
 from datetime import timedelta
-
+from corsheaders.defaults import default_methods
 env = environ.Env()
 environ.Env.read_env()
 
@@ -35,6 +35,17 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = []
 
 TOKEN_EXPIRED_AFTER_SECONDS =18000
+
+"""
+REST_FRAMEWORK ={
+     'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'base.authentication_mixin.Authentications',
+        
+    ) ,
+}"""
 # Application definition
 
 BASE_APPS = [
@@ -56,7 +67,7 @@ THIRD_APPS = [
     'drf_yasg',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-   
+    "corsheaders",
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -67,7 +78,9 @@ SWAGGER_SETTINGS = {
    
 }
 
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -158,14 +171,16 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-"""REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}"""
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://\w+\.localhost\.3000$",
+]
+
+
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -189,5 +204,4 @@ SIMPLE_JWT = {
     
     "TOKEN_OBTAIN_SERIALIZER": "my_app.serializers.MyTokenObtainPairSerializer",
 }
-
 
