@@ -1,7 +1,6 @@
 import os
 import environ
 from datetime import timedelta
-from corsheaders.defaults import default_methods
 env = environ.Env()
 environ.Env.read_env()
 
