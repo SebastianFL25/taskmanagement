@@ -2,13 +2,38 @@
 from rest_framework import serializers
 from base.models import User
 from django.contrib.auth import authenticate        
-     
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    pass
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    
+    class Meta:
+        model=User
+        fields=['email']
+    
+class PaswordSerializer(serializers.Serializer):
+    password= serializers.CharField(max_length=130,min_length=6,write_only=True)
+    password2= serializers.CharField(max_length=130,min_length=6,write_only=True)
+    
+    def validate(self, data):
+        password = data.get("password")
+        password2 = data.get("password2")
+
+        if password != password2:
+            raise serializers.ValidationError("Las contraseñas no coinciden.")
+
+        return data
+
+        
 class UserSerializers(serializers.ModelSerializer):
     email = serializers.EmailField()
     
     class Meta:
         model=User
-        fields= ('email','password')
+        fields= ('id','email','password')
         
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -16,6 +41,14 @@ class UserSerializers(serializers.ModelSerializer):
             validated_data['password']
         )
         return user
+    
+class UserRDSerializers(serializers.ModelSerializer):
+    
+    class Meta:
+        model=User
+        fields= ('id','email','password')
+    
+
 
 
 class AuthTokenSerializerp(serializers.Serializer):

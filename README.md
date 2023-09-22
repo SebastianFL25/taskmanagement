@@ -36,6 +36,8 @@ data in the request body: title (task title), description (task description), an
 ● DELETE /api/tasks/{task_id}/: Deletes a specific task identified by its task_id.
 additional functionalities
 
+● GET /api/status/: Bring all the names of status
+
 ● POST /api/tasks/{task_id}/assign/: Assigns a specific identified task
 by its task_id to another user. It is required to send the user_id of the user to whom
 the task will be assigned in the request body.

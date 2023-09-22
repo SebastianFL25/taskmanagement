@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from task.models import Task, Status
 
+class TaskStatSerializer(serializers.Serializer):
+    user=serializers.EmailField()
+    total_task = serializers.IntegerField()
+    task_completed = serializers.IntegerField()
+    task_in_progress = serializers.IntegerField()
+    task_pending = serializers.IntegerField()
+
 class TaskSerializerModel(serializers.ModelSerializer):
     
     class Meta:

@@ -1,13 +1,15 @@
+#from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from .serializers import TaskSerializerModel,StatusSerializerModel,TaskUpdateSerializerModel,TaskAssingToNewUserSerializer,TaskStatusSerializer
+from .serializers import TaskSerializerModel,StatusSerializerModel,TaskUpdateSerializerModel,TaskAssingToNewUserSerializer,TaskStatusSerializer,TaskStatSerializer
 from task.models import Task,Status
 from rest_framework.response import Response
-from rest_framework import status
+#from rest_framework import status
 from rest_framework import generics
 from rest_framework.authtoken.views import Token
-from base.authentication_mixin import Authentications
+#from base.authentication_mixin import Authentications
 from rest_framework.views import APIView
-
+from rest_framework.permissions import IsAuthenticated
+from base.models import User
 
 class TaskUpdate(generics.RetrieveUpdateAPIView):
 
@@ -16,8 +18,9 @@ class TaskUpdate(generics.RetrieveUpdateAPIView):
     
 
 class TaskModelViewSet(ModelViewSet):
-    authentication_classes = [Authentications]
-
+    #authentication_classes = [Authentications]
+    permission_classes=(IsAuthenticated,)
+    
     serializer_class = TaskSerializerModel
     queryset = Task.objects.all()
     
@@ -101,23 +104,37 @@ class StatusLisCreateApiView(generics.ListCreateAPIView):
     
     
 class Stat(APIView):
-    
-    def get(self, request,format=None):
-        user = request.user  # Obtiene el usuario autenticado
-        tasks = Task.objects.filter(user=user)  # Filtra las tareas del usuario
-        total_tasks = tasks.count()  # Calcula la cantidad total de tareas
-        completed_tasks = tasks.filter(status=Status.objects.filter(name='Completed')).count()  # Calcula la cantidad de tareas completadas
-        pending_tasks = tasks.filter(status=Status.objects.filter(name='In Progress')).count()  # Calcula la cantidad de tareas pendientes
+
+    def get(self,request,pk=None):
         
-        print(user)
-        # Crea un diccionario con las estadísticas
-        stats = {
-            'total_tasks': total_tasks,
-            'completed_tasks': completed_tasks,
-            'pending_tasks': pending_tasks
-        }
+        try:
+            user = User.objects.get(id=pk)
+            
+                
+            user_email=user.email
+            
+            total_task = Task.objects.filter(user_id=pk).count()
+            task_completed = Task.objects.filter(user_id=pk,status=3).count()
+            task_pending = Task.objects.filter(user_id=pk,status=1).count()
+            task_in_progress =Task.objects.filter(user_id=pk,status=2).count()
+            
+            estadisticas = {
+                'user':user_email,
+                'total_task': total_task,
+                'task_completed': task_completed,
+                'task_pending': task_pending,
+                'task_in_progress': task_in_progress
+            }
+            
+            serializer = TaskStatSerializer(estadisticas)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+         
+            return Response({'error_message':'User not exist'})
         
-        return Response(stats)
+        
+        
+        
         
     
  

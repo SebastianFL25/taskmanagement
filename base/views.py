@@ -4,7 +4,53 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
-from .api.serializer import CustomAuthTokenSerializer
+from django.contrib.auth import authenticate
+from rest_framework.generics import GenericAPIView
+from .api.serializer import CustomTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .api.serializer import  UserSerializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.sessions.models import Session
+
+from .models import User
+class Login(TokenObtainPairView):
+    serializer_class=CustomTokenObtainPairSerializer
+    
+    
+    def post(self,request,*args, **kwargs):
+        
+        email = request.data.get('email','')
+        password = request.data.get('password','')
+        
+        user= authenticate(
+            email=email,
+            password=password
+        )
+        
+        if user :
+            login_seializer = self.serializer_class(data=request.data)
+            if login_seializer.is_valid():
+                user_serializer = UserSerializers(user)
+                return Response({
+                    'token':login_seializer.validated_data.get("access"),
+                    'refresh-token': login_seializer.validated_data.get("refresh"),
+                    'user':user_serializer.data,
+                    'message':'Login access succesful'
+                },status=status.HTTP_200_OK)
+            return Response({'error':'Email or password incorrect'},status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response({'error':'Email or password incorrect'},status=status.HTTP_401_UNAUTHORIZED)
+
+class Logout(GenericAPIView):
+    def post(self,request,*args, **kwargs):
+        user = User.objects.filter(email=request.data.get('email',None))
+        if user.exists():
+            RefreshToken.for_user(user.first())
+
+            return Response({'message':'Session close'},status=status.HTTP_200_OK)
+        return Response({'error':'No exist this user'},status=status.HTTP_401_UNAUTHORIZED)
+
+"""from .api.serializer import CustomAuthTokenSerializer
 from django.contrib.sessions.models import Session
 from rest_framework import parsers, renderers
 from rest_framework.authtoken.models import Token
@@ -12,10 +58,9 @@ from rest_framework.compat import coreapi, coreschema
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
-from .api.serializer import  UserSerializers
 from rest_framework.views import APIView
 from .models import User
-from django.contrib.auth import authenticate
+
 
 class ObtainAuthTokenp(APIView):
     throttle_classes = ()
@@ -109,12 +154,12 @@ class Login(ObtainAuthTokenp):
                     },status= status.HTTP_201_CREATED)
                     
                 else:
-                    """all_session =Session.objects.filter(expire_date__gte =datetime.now())
-                    if all_session.exists():
-                        for session in all_session:
-                            session_data = session.get_decoded()
-                            if user.id == int(session_data.get('_auth_user_id')):
-                                session.delete()"""
+                    #all_session =Session.objects.filter(expire_date__gte =datetime.now())
+                    #if all_session.exists():
+                    #    for session in all_session:
+                    #       session_data = session.get_decoded()
+                    #        if user.id == int(session_data.get('_auth_user_id')):
+                    #            session.delete()
                     token.delete()
                     #token =Token.objects.create(user=user)
                     return Response({
@@ -150,3 +195,4 @@ class Logout(APIView):
             return Response({'error_message':'User does not exist'},status=status.HTTP_400_BAD_REQUEST)
         except:    
             return Response({'error_message':'No token found in the request'},status=status.HTTP_409_CONFLICT)
+"""
